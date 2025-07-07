@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '../../../../../lib/dbConnect';
-import Question from '../../../../../models/Question';
+import dbConnect from '../../../../lib/dbConnect';
+import Question from '../../../../models/Question';
 
 export async function GET(req: NextRequest) {
   await dbConnect();
