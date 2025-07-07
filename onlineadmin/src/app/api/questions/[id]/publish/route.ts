@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '../../../../../lib/dbConnect';
 import Question from '../../../../../models/Question';
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, context) {
   await dbConnect();
   const { id } = context.params;
   try {
