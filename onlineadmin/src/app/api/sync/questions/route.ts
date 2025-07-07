@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '../../../../lib/dbConnect';
 import Question from '../../../../models/Question';
-import NextCors from 'nextjs-cors';
 
 export async function GET(req: NextRequest) {
-  // Enable CORS
-  await NextCors(req, {
-    origin: '*',
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    optionsSuccessStatus: 200,
-  });
-
   await dbConnect();
   const { searchParams } = new URL(req.url);
   const subject = searchParams.get('subject');
@@ -20,8 +12,36 @@ export async function GET(req: NextRequest) {
       filter.subject = subject;
     }
     const questions = await Question.find(filter);
-    return NextResponse.json(questions);
+    // Manually set CORS headers
+    return new NextResponse(JSON.stringify(questions), {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Content-Type': 'application/json',
+      },
+    });
   } catch {
-    return new Response('Failed to fetch published questions', { status: 500 });
+    return new NextResponse('Failed to fetch published questions', {
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
+}
+
+// Handle preflight OPTIONS request
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }
