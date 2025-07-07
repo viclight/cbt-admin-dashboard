@@ -9,7 +9,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const question = await Question.findByIdAndUpdate(id, { published: true }, { new: true });
     if (!question) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ success: true, question });
-  } catch (_err) {
+  } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
