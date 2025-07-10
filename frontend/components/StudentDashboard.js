@@ -36,7 +36,7 @@ const StudentDashboard = () => {
         });
     }
     // Fetch published questions from online admin
-    fetch('http://localhost:3000/api/sync/questions') // Change port if needed
+    fetch('http://localhost:4000/api/sync/questions') // Changed port to match backend
       .then(res => res.json())
       .then(data => setQuestions(data))
       .catch(err => console.error('Failed to fetch questions:', err));
@@ -54,6 +54,26 @@ const StudentDashboard = () => {
     await window.cbtAPI?.retrySync();
   };
 
+  // Manual sync button for admin/troubleshooting
+  const handleManualSync = async () => {
+    setSyncStatus('Syncing from online admin...');
+    setProgress(null);
+    try {
+      const res = await fetch('http://localhost:4000/api/sync-now', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setSyncStatus('Questions synced successfully!');
+        // Refresh questions after sync
+        const qRes = await fetch('http://localhost:4000/api/sync/questions');
+        setQuestions(await qRes.json());
+      } else {
+        setSyncStatus('Sync failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      setSyncStatus('Sync failed: ' + err.message);
+    }
+  };
+
   return (
     <div>
       <button onClick={handleSync}>Sync Questions from Online Admin</button>
@@ -61,6 +81,7 @@ const StudentDashboard = () => {
       {syncStatus && syncStatus.toLowerCase().includes('error') && (
         <button onClick={handleRetry} style={{ color: 'red', marginLeft: 8 }}>Retry Sync</button>
       )}
+      <button onClick={handleManualSync} style={{marginLeft: 8}}>Manual Sync Now</button>
 
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
         {studentPhoto && (

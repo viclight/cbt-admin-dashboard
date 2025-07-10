@@ -503,6 +503,24 @@ app.get('/api/users/:id', (req, res) => {
   });
 });
 
+// Serve synced questions to frontend
+app.get('/api/sync/questions', (req, res) => {
+  db.all('SELECT * FROM questions', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch questions' });
+    res.json(rows);
+  });
+});
+
+// Manual sync endpoint for admin or troubleshooting
+app.post('/api/sync-now', async (req, res) => {
+  try {
+    await syncQuestions();
+    res.json({ success: true, message: 'Questions synced from online admin.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
