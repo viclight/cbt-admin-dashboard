@@ -3,6 +3,7 @@ import sqlite3 from 'sqlite3';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcryptjs';
+import { syncQuestions } from './syncQuestions.js';
 
 const app = express();
 const PORT = 4000;
@@ -55,6 +56,16 @@ const db = new sqlite3.Database('./cbt.db', (err) => {
       achieved_at TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
+  }
+});
+
+// Sync questions from online admin on server startup
+db.serialize(async () => {
+  try {
+    await syncQuestions();
+    console.log('Questions synced from online admin on startup.');
+  } catch (err) {
+    console.error('Failed to sync questions on startup:', err);
   }
 });
 

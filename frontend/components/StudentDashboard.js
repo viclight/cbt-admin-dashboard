@@ -6,8 +6,18 @@ const StudentDashboard = () => {
   const [hasCompleted, setHasCompleted] = useState({});
   const [studentPhoto, setStudentPhoto] = useState('');
   const [questions, setQuestions] = useState([]);
+  const [syncStatus, setSyncStatus] = useState('');
+  const [progress, setProgress] = useState(null);
 
   useEffect(() => {
+    // Listen for sync progress from Electron
+    if (window.cbtAPI?.onSyncProgress) {
+      window.cbtAPI.onSyncProgress((data) => {
+        setSyncStatus(data.message);
+        if (data.status === 'progress') setProgress(`${data.current}/${data.total}`);
+        else setProgress(null);
+      });
+    }
     // Fetch completed subjects for the current user from backend/localStorage
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     if (user && user.id) {
@@ -32,8 +42,26 @@ const StudentDashboard = () => {
       .catch(err => console.error('Failed to fetch questions:', err));
   }, []);
 
+  const handleSync = async () => {
+    setSyncStatus('Syncing...');
+    setProgress(null);
+    await window.cbtAPI?.syncQuestions();
+  };
+
+  const handleRetry = async () => {
+    setSyncStatus('Retrying...');
+    setProgress(null);
+    await window.cbtAPI?.retrySync();
+  };
+
   return (
     <div>
+      <button onClick={handleSync}>Sync Questions from Online Admin</button>
+      <div>{syncStatus} {progress && <span>({progress})</span>}</div>
+      {syncStatus && syncStatus.toLowerCase().includes('error') && (
+        <button onClick={handleRetry} style={{ color: 'red', marginLeft: 8 }}>Retry Sync</button>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
         {studentPhoto && (
           <img
@@ -83,8 +111,6 @@ const StudentDashboard = () => {
       <button onClick={() => router.push('/robot-competition')} style={{ marginLeft: 8 }}>
         Compete with Robot
       </button>
-      
-      {/* ...existing code... */}
     </div>
   );
 };
