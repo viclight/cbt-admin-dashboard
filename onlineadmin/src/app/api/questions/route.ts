@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
   }
   const client = await clientPromise;
   const db = client.db();
-  const result = await db.collection('questions').insertOne({ subject, questionText, options, correctAnswer, difficulty });
+  // Always set published to false when creating a new question
+  const questionData = { ...body, published: false };
+  const result = await db.collection('questions').insertOne(questionData);
   return NextResponse.json({ insertedId: result.insertedId });
 }
 
