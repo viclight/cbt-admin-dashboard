@@ -13,7 +13,7 @@ export async function GET() {
 // POST: Add a new question
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { subject, questionText, options, correctAnswer, difficulty } = body;
+  const { subject, questionText, options, correctAnswer } = body;
   if (!subject || !questionText || !options || !correctAnswer) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
